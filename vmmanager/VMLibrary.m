@@ -1423,7 +1423,7 @@
     if ([props objectForKey: @"cpu"])
         hw.cpu.cores = props[@"cpu"];
     else
-        hw.cpu.cores = @1;
+        hw.cpu.cores = @2;
 
     if ([props objectForKey: @"ram"])
         hw.ram = props[@"ram"];
