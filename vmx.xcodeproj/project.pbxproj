@@ -1175,7 +1175,6 @@
 		AADC4A5F1AC6A31C00B3F9EC /* tftp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tftp.h; sourceTree = "<group>"; };
 		AADC4A601AC6A31C00B3F9EC /* udp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = udp.c; sourceTree = "<group>"; };
 		AADC4A611AC6A31C00B3F9EC /* udp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = udp.h; sourceTree = "<group>"; };
-		AADC4B181AC6A31D00B3F9EC /* vmcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmcs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2083,7 +2082,6 @@
 			isa = PBXGroup;
 			children = (
 				AAD59F7B1D19656F00AE1870 /* power_events.m */,
-				AADC4B181AC6A31D00B3F9EC /* vmcs.h */,
 			);
 			name = vmx;
 			sourceTree = "<group>";
