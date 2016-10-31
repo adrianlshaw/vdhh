@@ -150,7 +150,7 @@ QEMUOptionRom option_rom[MAX_OPTION_ROMS];
 int nb_option_roms;
 int semihosting_enabled = 0;
 int old_param = 0;
-const char *vmx_name;
+static const char *vmx_name;
 int alt_grab = 0;
 int ctrl_grab = 0;
 unsigned int nb_prom_envs = 0;
@@ -3484,7 +3484,7 @@ int vmx_main(const char* vm_path, int argc, char **argv, char **envp)
     g_shell_parse_argv (buf, &argc, &argv, NULL);
     for (i=0; i<argc; i++)
         printf("arg %d: %s\n", i, argv[i]);
-
+    vmx_name = vm_path;
     srand(time(NULL));
     int res = veertu_run(argc, argv, NULL);
     g_strfreev(argv);

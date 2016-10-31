@@ -16,7 +16,7 @@
 
 extern const char *bios_name;
 
-extern const char *vmx_name;
+//extern const char *vmx_name;
 extern uint8_t vmx_uuid[];
 extern bool vmx_uuid_set;
 int vmx_uuid_parse(const char *str, uint8_t *uuid);
