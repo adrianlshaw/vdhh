@@ -50,6 +50,7 @@ uint64_t sign(uint64_t val, int size)
             break;
         case 8:
             val = (int64_t)val;
+            break;
         default:
             VM_PANIC_EX("%s invalid size %d\n", __FUNCTION__, size);
             break;
