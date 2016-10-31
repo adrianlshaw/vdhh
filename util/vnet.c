@@ -265,6 +265,16 @@ ssize_t vnet_write_packet(VnetState *s, const struct iovec *iov, int iovcnt)
         pkt_desc.vm_flags = 0;
     }
 
+    if (!s->hw_mac_set) {
+        const struct ether_header *eth = pkt_desc.vm_pkt_iov->iov_base;
+        memcpy(s->hw_mac, eth->ether_shost, ETHER_ADDR_LEN);
+        s->hw_mac_set = true;
+    } else {
+        const struct ether_header *eth = pkt_desc.vm_pkt_iov->iov_base;
+//        assert(memcmp(s->hw_mac, eth->ether_shost, ETHER_ADDR_LEN) == 0);
+        memcpy(s->hw_mac, eth->ether_shost, ETHER_ADDR_LEN);
+    }
+
     vnet_mac_change(s, pkt_desc.vm_pkt_iov->iov_base, pkt_desc.vm_pkt_size, false);
     vnet_mac_change_for_arp(s, pkt_desc.vm_pkt_iov->iov_base, pkt_desc.vm_pkt_size, false);
     vnet_mac_change_for_dhcp(s, pkt_desc.vm_pkt_iov->iov_base, pkt_desc.vm_pkt_size, false);

@@ -921,10 +921,13 @@
             model = [NSString stringWithFormat: @"%@-%@", model, nic.family];
 
         [params addObject: @"-net"];
-        if ([mac length] > 0)
-            [params addObject: [NSString stringWithFormat: @"nic,vlan=%d,model=%@,macaddr=%@%@", i, model, mac, adv_params]];
-        else
-            [params addObject: [NSString stringWithFormat: @"nic,vlan=%d,model=%@%@", i, model, adv_params]];
+        if ([mac length] == 0) {
+            const char* path = [[self getVmFolder: name] fileSystemRepresentation];
+            uint32_t crc = crc32(0, path, strlen(path)) + i;
+            mac = [NSString stringWithFormat:@"76:6d:78:%02x:%02x:%02x",
+                   (int)((crc >> 24) ^ ((crc >> 16) & 0xff)), (int)((crc >> 8) & 0xff), (int)(crc & 0xff)];
+        }
+        [params addObject: [NSString stringWithFormat: @"nic,vlan=%d,model=%@,macaddr=%@%@", i, model, mac, adv_params]];
 
         [params addObject: @"-net"];
         if ([conn isEqualToString: @"host"] || [conn isEqualToString: @"shared"]) {
