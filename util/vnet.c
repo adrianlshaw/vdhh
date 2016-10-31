@@ -436,7 +436,6 @@ static VnetState *net_vnet_fd_init(NetClientState *peer,
     
     s = DO_UPCAST(VnetState, nc, nc);
 
-    fcntl(fd, F_SETFL, O_NONBLOCK);
     s->proxyfd = fd;
     s->iface = iface;
     s->enabled = true;
@@ -590,6 +589,8 @@ static int net_init_proxy(int mode, uuid_t uuid, uint8_t lmac[6]) {
         displayAlert("Failed to create network connection", "Try again later", "Close");
         return -1;
     }
+
+    fcntl(fd, F_SETFL, O_NONBLOCK);
 
     return fd;
 }

@@ -921,7 +921,7 @@
             model = [NSString stringWithFormat: @"%@-%@", model, nic.family];
 
         [params addObject: @"-net"];
-        if (mac)
+        if ([mac length] > 0)
             [params addObject: [NSString stringWithFormat: @"nic,vlan=%d,model=%@,macaddr=%@%@", i, model, mac, adv_params]];
         else
             [params addObject: [NSString stringWithFormat: @"nic,vlan=%d,model=%@%@", i, model, adv_params]];

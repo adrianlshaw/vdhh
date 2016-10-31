@@ -3484,6 +3484,8 @@ int vmx_main(const char* vm_path, int argc, char **argv, char **envp)
     g_shell_parse_argv (buf, &argc, &argv, NULL);
     for (i=0; i<argc; i++)
         printf("arg %d: %s\n", i, argv[i]);
+
+    srand(time(NULL));
     int res = veertu_run(argc, argv, NULL);
     g_strfreev(argv);
     return res;

@@ -167,12 +167,17 @@ void vmx_macaddr_default_if_unset(MACAddr *macaddr)
 
     if (memcmp(macaddr, &zero, sizeof(zero)) != 0)
         return;
+
+    if (0 == index)
+        index = rand();
+
     macaddr->a[0] = 0x52;
     macaddr->a[1] = 0x54;
-    macaddr->a[2] = 0x00;
-    macaddr->a[3] = 0x12;
-    macaddr->a[4] = 0x34;
-    macaddr->a[5] = 0x56 + index++;
+    macaddr->a[2] = 0x01;
+    macaddr->a[3] = ((index >> 16) & 0xff) ^ ((index >> 24) & 0xff);
+    macaddr->a[4] = ((index >> 8) & 0xff);
+    macaddr->a[5] = (index & 0xff);
+    ++index;
 }
 
 /**
