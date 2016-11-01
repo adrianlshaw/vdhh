@@ -408,6 +408,8 @@ static void on_obj_event(DeviceState* object, int event, void* opaque)
 {
     VmAppController* self = (__bridge VmAppController*)opaque;
     dispatch_async(dispatch_get_main_queue(), ^{
+        if (NULL == object->id)
+            return;
 
         if (strncmp(object->id, "usb", 3) == 0) {
             // update USB menu items

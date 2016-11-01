@@ -717,7 +717,8 @@
         }
 
         if (usb.locationId)
-            [dev appendFormat:@",hostaddr=0x%x", [usb.locationId unsignedIntValue]];
+            [dev appendFormat:@",id=usb%u,hostaddr=0x%x", [usb.locationId unsignedIntValue],
+             [usb.locationId unsignedIntValue]];
         if (usb.vendorId)
             [dev appendFormat:@",vendorid=0x%x", [usb.vendorId unsignedIntValue]];
         if (usb.productId)
