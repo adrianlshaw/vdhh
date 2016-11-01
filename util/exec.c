@@ -1762,8 +1762,8 @@ static int memory_access_size(VeertuMemArea *mr, unsigned l, hwaddr addr)
     return l;
 }
 
-bool address_space_rw(VeertuAddressSpace *as, hwaddr addr, uint8_t *buf,
-                      int len, bool is_write)
+bool address_space_rw(VeertuAddressSpace *as, hwaddr addr, void *buf,
+                      uint64_t len, bool is_write)
 {
     hwaddr l;
     uint8_t *ptr;

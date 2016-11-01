@@ -147,7 +147,9 @@ static void exit_long_mode(hv_vcpuid_t vcpu, uint64_t cr0, uint64_t efer)
     efer &= ~EFER_LMA;
     wvmcs(vcpu, VMCS_GUEST_IA32_EFER, efer);
 }
-bool address_space_rw(VeertuAddressSpace *address_space, hwaddr addr, uint8_t *buf, int len, bool is_write);
+
+bool address_space_rw(VeertuAddressSpace *address_space, hwaddr addr, void *buf, uint64_t len, bool is_write);
+
 static void inline macvm_set_cr0(hv_vcpuid_t vcpu, uint64_t cr0)
 {
     int i;

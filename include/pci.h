@@ -164,7 +164,7 @@ enum {
 };
 
 #define TYPE_PCI_DEVICE "pci-device"
-#define PCI_DEVICE(obj) obj
+#define PCI_DEVICE(obj) ((PCIDevice*)(obj))
 #define PCI_DEVICE_CLASS(klass) klass
 #define PCI_DEVICE_GET_CLASS(obj) ((VeertuType *)obj)->class
 
@@ -611,7 +611,7 @@ static inline void
 pci_set_quad_by_mask(uint8_t *config, uint64_t mask, uint64_t reg)
 {
     uint64_t val = pci_get_quad(config);
-    uint64_t rval = reg << (ffs(mask) - 1);
+    uint64_t rval = reg << (ffsll(mask) - 1);
     pci_set_quad(config, (~mask & val) | (mask & rval));
 }
 
@@ -619,7 +619,7 @@ static inline uint64_t
 pci_get_quad_by_mask(uint8_t *config, uint64_t mask)
 {
     uint64_t val = pci_get_quad(config);
-    return (val & mask) >> (ffs(mask) - 1);
+    return (val & mask) >> (ffsll(mask) - 1);
 }
 
 PCIDevice *pci_create_multifunction(PCIBus *bus, int devfn, bool multifunction,
@@ -700,13 +700,13 @@ static inline int pci_dma_write(PCIDevice *dev, uint64_t addr,
         st##_s##_dma(pci_get_address_space(dev), addr, val);            \
     }
 
-PCI_DMA_DEFINE_LDST(ub, b, 8);
-PCI_DMA_DEFINE_LDST(uw_le, w_le, 16)
-PCI_DMA_DEFINE_LDST(l_le, l_le, 32);
+//PCI_DMA_DEFINE_LDST(ub, b, 8);
+//PCI_DMA_DEFINE_LDST(uw_le, w_le, 16)
+//PCI_DMA_DEFINE_LDST(l_le, l_le, 32);
 PCI_DMA_DEFINE_LDST(q_le, q_le, 64);
-PCI_DMA_DEFINE_LDST(uw_be, w_be, 16)
-PCI_DMA_DEFINE_LDST(l_be, l_be, 32);
-PCI_DMA_DEFINE_LDST(q_be, q_be, 64);
+//PCI_DMA_DEFINE_LDST(uw_be, w_be, 16)
+//PCI_DMA_DEFINE_LDST(l_be, l_be, 32);
+//PCI_DMA_DEFINE_LDST(q_be, q_be, 64);
 
 #undef PCI_DMA_DEFINE_LDST
 

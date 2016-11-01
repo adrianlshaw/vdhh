@@ -184,7 +184,7 @@ void memory_callbacks_unregister(MemoryCallbacks *callbacks);
 void veertu_address_space_init(VeertuAddressSpace *address_space, VeertuMemArea *root_area, char * name);
 void veertu_address_space_destroy(VeertuAddressSpace *address_space);
 
-bool address_space_rw(VeertuAddressSpace *address_space, hwaddr addr, uint8_t *buf, int len, bool is_write);
+bool address_space_rw(VeertuAddressSpace *address_space, hwaddr addr, void *buf, uint64_t len, bool is_write);
 bool address_space_write(VeertuAddressSpace *address_space, uint64_t addr, const uint8_t *buf, int len);
 bool address_space_read(VeertuAddressSpace *address_space, uint64_t addr, uint8_t *buf, int len);
 bool address_space_memset(VeertuAddressSpace *as, hwaddr addr, const uint8_t value, int len);
