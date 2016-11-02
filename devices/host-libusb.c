@@ -86,8 +86,8 @@ struct USBHostDevice {
     libusb_device_handle             *dh;
     struct libusb_device_descriptor  ddesc;
 
+    bool                             detached;
     struct {
-        bool                         detached;
         bool                         claimed;
     } ifs[USB_MAX_INTERFACES];
 
@@ -136,7 +136,7 @@ static QTAILQ_HEAD(, USBHostDevice) hostdevs =
 static void usb_host_auto_check(void *unused);
 static void usb_host_release_interfaces(USBHostDevice *s);
 static void usb_host_nodev(USBHostDevice *s);
-static void usb_host_detach_kernel(USBHostDevice *s);
+static int usb_host_detach_kernel(USBHostDevice *s);
 static int usb_host_attach_kernel(USBHostDevice *s);
 
 /* ------------------------------------------------------------------------ */
@@ -820,7 +820,7 @@ static int usb_host_open(USBHostDevice *s, libusb_device *dev)
     USBDevice *udev = USB_DEVICE(s);
     int bus_num = libusb_get_bus_number(dev);
     int addr    = libusb_get_device_address(dev);
-    int rc, crc;
+    int rc;
     Error *local_err = NULL;
 
     if (s->dh != NULL) {
@@ -834,10 +834,7 @@ static int usb_host_open(USBHostDevice *s, libusb_device *dev)
     s->bus_num = bus_num;
     s->addr    = addr;
 
-    // try to claim before open
-    char command[64];
-    sprintf(command, "usbhelper claim 0x%x", addr);
-    crc = vsystem(command, 1);
+    usb_host_detach_kernel(s);
 
     rc = libusb_open(dev, &s->dh);
     if (rc != 0) {
@@ -845,9 +842,6 @@ static int usb_host_open(USBHostDevice *s, libusb_device *dev)
             displayAlert("Failed connect to USB device", "Access to USB devices, except Mass Storage devices, is now prohibited by the current system. This only works in macOS 10.11 and below.", "Close");
         goto fail;
     }
-
-    if (0 != crc)
-      usb_host_detach_kernel(s);
 
     libusb_get_device_descriptor(dev, &s->ddesc);
     usb_host_get_port(s->dev, s->port, sizeof(s->port));
@@ -875,17 +869,21 @@ static int usb_host_open(USBHostDevice *s, libusb_device *dev)
     }
 
     // notify change
-    qdev_signal_event(DEVICE(s), 0);
+    qdev_signal_event(DEVICE(s), 1);
 
     return 0;
 
 fail:
+    usb_host_attach_kernel(s);
     if (s->dh != NULL) {
         libusb_close(s->dh);
         s->dh = NULL;
-        s->dev = NULL;
-        s->addr = 0;
     }
+    s->dev = NULL;
+    s->addr = 0;
+
+    qdev_signal_event(DEVICE(s), -1);
+
     return -1;
 }
 
@@ -901,7 +899,6 @@ static void usb_host_abort_xfers(USBHostDevice *s)
 static int usb_host_close(USBHostDevice *s)
 {
     USBDevice *udev = USB_DEVICE(s);
-    int drc;
 
     if (s->dh == NULL) {
         return -1;
@@ -916,15 +913,9 @@ static int usb_host_close(USBHostDevice *s)
 
     usb_host_release_interfaces(s);
     libusb_reset_device(s->dh);
-    drc = usb_host_attach_kernel(s);
     libusb_close(s->dh);
 
-    if (0 != drc) {
-        // attach kernel via external helper
-        char command[64];
-        sprintf(command, "usbhelper release 0x%x", s->addr);
-        vsystem(command, 1);
-    }
+    usb_host_attach_kernel(s);
 
     s->dh = NULL;
     s->dev = NULL;
@@ -1041,47 +1032,35 @@ static void usb_host_cancel_packet(USBDevice *udev, USBPacket *p)
     }
 }
 
-static void usb_host_detach_kernel(USBHostDevice *s)
-{    
-    struct libusb_config_descriptor *conf;
-    int rc, i;
+static int usb_host_detach_kernel(USBHostDevice *s)
+{
+    int rc;
+    char command[64];
 
-    rc = libusb_get_active_config_descriptor(s->dev, &conf);
-    if (rc != 0) {
-        return;
-    }
-    for (i = 0; i < conf->bNumInterfaces; i++) {
-        rc = libusb_kernel_driver_active(s->dh, i);
-        usb_host_libusb_error("libusb_kernel_driver_active", rc);
-        if (rc != 1) {
-            continue;
-        }
-        rc = libusb_detach_kernel_driver(s->dh, i);
-        if (LIBUSB_SUCCESS == rc) {
-            usb_host_libusb_error("libusb_detach_kernel_driver", rc);
-            s->ifs[i].detached = true;
-        }
-    }
-    libusb_free_config_descriptor(conf);
+    if (s->detached)
+        return 0;
+
+    sprintf(command, "usbhelper claim 0x%x", s->addr);
+    rc = vsystem(command, 1);
+    if (0 == rc)
+        s->detached = 1;
+
+    return rc;
 }
 
 static int usb_host_attach_kernel(USBHostDevice *s)
 {
-    struct libusb_config_descriptor *conf;
-    int rc, i;
+    int rc;
+    char command[64];
 
-    rc = libusb_get_active_config_descriptor(s->dev, &conf);
-    if (rc != 0) {
-        return rc;
-    }
-    for (i = 0; i < conf->bNumInterfaces; i++) {
-        if (!s->ifs[i].detached) {
-            continue;
-        }
-        rc |= libusb_attach_kernel_driver(s->dh, i);
-        s->ifs[i].detached = false;
-    }
-    libusb_free_config_descriptor(conf);
+    if (!s->detached)
+        return 0;
+
+    sprintf(command, "usbhelper release 0x%x", s->addr);
+    rc = vsystem(command, 1);
+    if (0 == rc)
+        s->detached = 0;
+
     return rc;
 }
 
@@ -1434,6 +1413,8 @@ static void usb_host_post_load_bh(void *opaque)
     if (udev->attached) {
         usb_device_detach(udev);
     }
+
+    dev->errcount = 0;
     usb_host_auto_check(NULL);
 }
 
@@ -1552,7 +1533,7 @@ static void usb_host_auto_check(void *unused)
 
                 /* We got a match */
                 s->seen++;
-                if (s->errcount >= 3) {
+                if (s->errcount > 0) {
                     continue;
                 }
                 if (s->dh != NULL) {
