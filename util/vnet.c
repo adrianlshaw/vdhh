@@ -550,7 +550,7 @@ static int create_socket(const char* path) {
         return -1;
     }
 
-    chmod(addr.sun_path, 0666);
+    chmod(addr.sun_path, 0600);
 
     return s;
 }
@@ -565,15 +565,17 @@ static int net_init_proxy(int mode, uuid_t uuid, uint8_t lmac[6]) {
         return -1;
     }
 
+    if (uuid_is_null(uuid))
+        uuid_generate(uuid);
+
+    uuid_string_t buf;
+    uuid_unparse(uuid, buf);
+
     // launch the proxy
     char vcmd[128];
-    snprintf(vcmd, sizeof(vcmd), "vmnetproxy %s %s", path, mode == VMNET_HOST_MODE ? "host" : "shared");
-    if (!uuid_is_null(uuid)) {
-        uuid_string_t buf;
-        uuid_unparse(uuid, buf);
-        strncat(vcmd, " ", sizeof(vcmd));
-        strncat(vcmd, buf, sizeof(vcmd));
-    }
+    snprintf(vcmd, sizeof(vcmd), "vmnetproxy %s %s %s %u",
+             path, mode == VMNET_HOST_MODE ? "host" : "shared",
+             buf, getuid());
     if (0 != vsystem(vcmd, 0)) {
         close(fd);
         unlink(path);
