@@ -258,6 +258,7 @@ BusState *qdev_get_parent_bus(DeviceState *dev);
 /*** BUS API. ***/
 
 DeviceState *qdev_find_recursive(BusState *bus, const char *id);
+int qdev_find_all_recursive(BusState *bus, const char *id, int (*f)(void*, DeviceState*), void* opaque);
 
 /* Returns 0 to walk children, > 0 to skip walk, < 0 to terminate walk. */
 typedef int (qbus_walkerfn)(BusState *bus, void *opaque);

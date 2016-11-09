@@ -396,12 +396,22 @@ DeviceState *qdev_find_recursive(BusState *bus, const char *id)
     BusChild *kid;
     DeviceState *ret;
     BusState *child;
+    size_t preflen;
+    int r;
+
+    if (strstr(id, "*"))
+        preflen = strstr(id, "*") - id;
+    else
+        preflen = 0;
 
     QTAILQ_FOREACH(kid, &bus->children, sibling) {
         DeviceState *dev = kid->child;
-
-        if (dev->id && strcmp(dev->id, id) == 0) {
-            return dev;
+        if (dev->id) {
+            r = (preflen > 0) ? strncmp(dev->id, id, preflen)
+                              : strcmp(dev->id, id);
+            if (0 == r) {
+                return dev;
+            }
         }
 
         QLIST_FOREACH(child, &dev->child_bus, sibling) {
@@ -412,6 +422,40 @@ DeviceState *qdev_find_recursive(BusState *bus, const char *id)
         }
     }
     return NULL;
+}
+
+int qdev_find_all_recursive(BusState *bus, const char *id, int(*f)(void*, DeviceState*), void* opaque)
+{
+    BusChild *kid;
+    BusState *child;
+    size_t preflen;
+    int r;
+
+    if (strstr(id, "*"))
+        preflen = strstr(id, "*") - id;
+    else
+        preflen = 0;
+
+    QTAILQ_FOREACH(kid, &bus->children, sibling) {
+        DeviceState *dev = kid->child;
+        if (dev->id) {
+            r = (preflen > 0) ? strncmp(dev->id, id, preflen)
+                              : strcmp(dev->id, id);
+            if (0 == r) {
+                r = f(opaque, dev);
+                if (0 != r)
+                    return r;
+            }
+        }
+
+        QLIST_FOREACH(child, &dev->child_bus, sibling) {
+            r = qdev_find_all_recursive(child, id, f, opaque);
+            if (0 != r) {
+                return r;
+            }
+        }
+    }
+    return 0;
 }
 
 static void qbus_realize(BusState *bus, DeviceState *parent, const char *name)
