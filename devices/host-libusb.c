@@ -46,7 +46,7 @@
 /* ------------------------------------------------------------------------ */
 
 #define TYPE_USB_HOST_DEVICE "usb-host"
-#define USB_HOST_DEVICE(obj) obj
+#define USB_HOST_DEVICE(obj) ((USBHostDevice*)(obj))
 typedef struct USBHostDevice USBHostDevice;
 typedef struct USBHostRequest USBHostRequest;
 typedef struct USBHostIsoXfer USBHostIsoXfer;
@@ -1481,11 +1481,20 @@ void usb_host_register_types(void)
 
 /* ------------------------------------------------------------------------ */
 
+static void usb_register_suspended_devices(void* unused, DeviceState* dev) {
+    QTAILQ_INSERT_TAIL(&hostdevs, USB_HOST_DEVICE(dev), next);
+}
+
 static void usb_host_vm_state(void *unused, int running, RunState state)
 {
     struct USBHostDevice *s;
 
     if (running) {
+        if (QTAILQ_EMPTY(&hostdevs)) {
+            // iterate over suspended devices and add them to the list
+            qdev_find_all_recursive(sysbus_get_default(), "usb*",
+                                    usb_register_suspended_devices, NULL);
+        }
         usb_host_auto_check(unused);
     } else {
         QTAILQ_FOREACH(s, &hostdevs, next) {
