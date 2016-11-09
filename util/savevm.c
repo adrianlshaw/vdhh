@@ -680,12 +680,6 @@ void vmx_savevm_state_complete(QEMUFile *f)
             continue;
         }
 
-        // do not save usb
-        // TODO: this should be done for all 'hotplugged' devices
-        if (strstr(se->idstr, "usb-host") != NULL) {
-            continue;
-        }
-
         /* Section type */
         vmx_put_byte(f, QEMU_VM_SECTION_FULL);
         vmx_put_be32(f, se->section_id);
