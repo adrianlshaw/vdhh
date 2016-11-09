@@ -138,6 +138,7 @@ static void usb_host_release_interfaces(USBHostDevice *s);
 static void usb_host_nodev(USBHostDevice *s);
 static int usb_host_detach_kernel(USBHostDevice *s);
 static int usb_host_attach_kernel(USBHostDevice *s);
+static void usb_host_vm_state(void *, int running, RunState);
 
 /* ------------------------------------------------------------------------ */
 
@@ -200,6 +201,8 @@ static libusb_context *ctx;
 static uint32_t loglevel;
 
 static QEMUTimer *usb_auto_timer = NULL;
+static VMChangeStateEntry *usb_vmstate = NULL;
+
 
 static void usb_host_handle_fd(void *opaque)
 {
@@ -1458,6 +1461,9 @@ static void usb_host_class_initfn(VeertuTypeClass *klass, void *data)
     dc->vmsd = &vmstate_usb_host;
 //    dc->props = usb_host_dev_properties;
     set_bit(DEVICE_CATEGORY_BRIDGE, dc->categories);
+
+    assert(NULL == usb_vmstate);
+    usb_vmstate = vmx_add_vm_change_state_handler(usb_host_vm_state, NULL);
 }
 
 static VeertuTypeInfo usb_host_dev_info = {
@@ -1475,12 +1481,18 @@ void usb_host_register_types(void)
 
 /* ------------------------------------------------------------------------ */
 
-static VMChangeStateEntry *usb_vmstate = NULL;
-
 static void usb_host_vm_state(void *unused, int running, RunState state)
 {
+    struct USBHostDevice *s;
+
     if (running) {
         usb_host_auto_check(unused);
+    } else {
+        QTAILQ_FOREACH(s, &hostdevs, next) {
+            if (s->dh) {
+                usb_host_close(s);
+            }
+        }
     }
 }
 
@@ -1571,9 +1583,6 @@ static void usb_host_auto_check(void *unused)
         }
     }
 
-    if (!usb_vmstate) {
-        usb_vmstate = vmx_add_vm_change_state_handler(usb_host_vm_state, NULL);
-    }
     if (!usb_auto_timer) {
         usb_auto_timer = timer_new_ms(QEMU_CLOCK_REALTIME, usb_host_auto_check, NULL);
         if (!usb_auto_timer) {
