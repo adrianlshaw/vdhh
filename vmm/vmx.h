@@ -89,9 +89,7 @@ static uint64_t inline rvmcs(hv_vcpuid_t vcpu, uint32_t field)
 {
 	uint64_t v;
 
-	if (hv_vmx_vcpu_read_vmcs(vcpu, field, &v)) {
-		abort();
-	}
+	hv_vmx_vcpu_read_vmcs(vcpu, field, &v);
 
 	return v;
 }
@@ -99,9 +97,7 @@ static uint64_t inline rvmcs(hv_vcpuid_t vcpu, uint32_t field)
 /* write VMCS field */
 static void inline wvmcs(hv_vcpuid_t vcpu, uint32_t field, uint64_t v)
 {
-	if (hv_vmx_vcpu_write_vmcs(vcpu, field, v)) {
-		abort();
-	}
+	hv_vmx_vcpu_write_vmcs(vcpu, field, v);
 }
 
 /* desired control word constrained by hardware/hypervisor capabilities */
@@ -143,7 +139,7 @@ static void exit_long_mode(hv_vcpuid_t vcpu, uint64_t cr0, uint64_t efer)
 
     entry_ctls = rvmcs(vcpu, VMCS_ENTRY_CTLS);
     wvmcs(vcpu, VMCS_ENTRY_CTLS, entry_ctls & ~VM_ENTRY_GUEST_LMA);
-   
+
     efer &= ~EFER_LMA;
     wvmcs(vcpu, VMCS_GUEST_IA32_EFER, efer);
 }
@@ -229,7 +225,7 @@ static void inline vmx_set_nmi_window_exiting(CPUState *cpu)
 
 static void inline vmx_clear_nmi_window_exiting(CPUState *cpu)
 {
-    
+
     uint64_t val;
     val = rvmcs(cpu->mac_vcpu_fd, VMCS_PRI_PROC_BASED_CTLS);
     wvmcs(cpu->mac_vcpu_fd, VMCS_PRI_PROC_BASED_CTLS, val & ~VMCS_PRI_PROC_BASED_CTLS_NMI_WINDOW_EXITING);
