@@ -11,6 +11,9 @@
 		A1493FDF1DA15DEB008BDF70 /* log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CCA1D90326800BACA7C /* log.cpp */; };
 		A1493FE01DA15DF2008BDF70 /* vmsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CB91D8FF5C500BACA7C /* vmsg.cpp */; };
 		A1493FE11DA15DF7008BDF70 /* vobj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CBB1D8FF5C500BACA7C /* vobj.cpp */; };
+		A1CFE9F11DD34E7500DD2A81 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1CFE9F01DD34E7500DD2A81 /* ServiceManagement.framework */; };
+		A1CFE9F31DD34E8B00DD2A81 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1CFE9F21DD34E8B00DD2A81 /* CoreFoundation.framework */; };
+		A1CFE9F51DD34E9700DD2A81 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1CFE9F41DD34E9700DD2A81 /* Security.framework */; };
 		A1F13CD51D9112CD00BACA7C /* log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CCA1D90326800BACA7C /* log.cpp */; };
 		A1F13CD71D9112CD00BACA7C /* vmsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CB91D8FF5C500BACA7C /* vmsg.cpp */; };
 		A1F13CD81D9112CD00BACA7C /* vobj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1F13CBB1D8FF5C500BACA7C /* vobj.cpp */; };
@@ -33,6 +36,9 @@
 /* Begin PBXFileReference section */
 		A1493FD61DA156A6008BDF70 /* vsystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vsystem.cpp; sourceTree = SOURCE_ROOT; };
 		A1493FD71DA156A6008BDF70 /* vsystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vsystem.h; sourceTree = SOURCE_ROOT; };
+		A1CFE9F01DD34E7500DD2A81 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		A1CFE9F21DD34E8B00DD2A81 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		A1CFE9F41DD34E9700DD2A81 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		A1F13CA71D8FF54F00BACA7C /* com.veertu.vlaunch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.veertu.vlaunch; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F13CB71D8FF5C500BACA7C /* vlaunch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vlaunch.cpp; sourceTree = SOURCE_ROOT; };
 		A1F13CB81D8FF5C500BACA7C /* vlaunch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vlaunch.h; sourceTree = SOURCE_ROOT; };
@@ -60,18 +66,32 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1CFE9F51DD34E9700DD2A81 /* Security.framework in Frameworks */,
+				A1CFE9F31DD34E8B00DD2A81 /* CoreFoundation.framework in Frameworks */,
+				A1CFE9F11DD34E7500DD2A81 /* ServiceManagement.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A1CFE9EF1DD34E7500DD2A81 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1CFE9F41DD34E9700DD2A81 /* Security.framework */,
+				A1CFE9F21DD34E8B00DD2A81 /* CoreFoundation.framework */,
+				A1CFE9F01DD34E7500DD2A81 /* ServiceManagement.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A1F13C9E1D8FF54F00BACA7C = {
 			isa = PBXGroup;
 			children = (
 				A1F13CA91D8FF54F00BACA7C /* vlaunch */,
 				A1F13CDE1D91137D00BACA7C /* Supporting Files */,
 				A1F13CA81D8FF54F00BACA7C /* Products */,
+				A1CFE9EF1DD34E7500DD2A81 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};

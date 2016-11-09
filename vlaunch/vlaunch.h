@@ -9,10 +9,12 @@ __BEGIN_DECLS
 #define VLAUNCH_CMD_NOPE    0       // do nothing but send OK back
 #define VLAUNCH_CMD_LAUNCH  1       // launch tool provided in arguments
 #define VLAUNCH_CMD_STOP    2       // stop the tool, by sending SIGSTOP/SIGKILL pair
+#define VLAUNCH_CMD_REGT    3       // register executable tool for launch by name
 
 #define VLAUNCH_KEY_PATH    "path"  // str
 #define VLAUNCH_KEY_ARGV    "argv"  // vobj(array)
 #define VLAUNCH_KEY_ENVP    "envp"  // vobj(array)
+#define VLAUNCH_KEY_NAME    "name"  // str
 
 /// \brief run main loop of vlaunch, receiving messages from
 //         ifd, and sending responses to ofd file descriptors

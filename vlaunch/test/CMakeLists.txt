@@ -37,3 +37,5 @@ target_link_libraries(vtest
 )
 
 add_test(vtest "${CMAKE_CURRENT_BINARY_DIR}/vtest")
+
+add_dependencies(vtest googletest)

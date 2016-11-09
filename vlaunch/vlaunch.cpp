@@ -13,10 +13,13 @@
 #include <cassert>
 #include <cerrno>
 #include <string>
+#include <map>
 
 // -----------------------------------------------------------------------------
 
 namespace {
+
+std::map<std::string, std::string> toolNames;
 
 int process_msg_nope(const vobj_t cmd, vobj_t rsp) {
     // send OK status back
@@ -24,13 +27,24 @@ int process_msg_nope(const vobj_t cmd, vobj_t rsp) {
     return 0;
 }
 
-// launch tool with path and arguments provided
-// in the cmd
-// TODO: support launchd.plist??
+// launch tool with path (or short name) and arguments provided
 // TODO: create pipe and route it to the tool
 // TODO: control pid and signal it exited or restart silently
 int process_msg_launch(const vobj_t msg, vobj_t rsp) {
     std::string path(vobj_get_str(msg, VLAUNCH_KEY_PATH));
+    if (path.length() > 0 && path[0] != '/') {
+        // short name
+        auto it = toolNames.find(path);
+        if (toolNames.end() != it)
+            path = it->second;
+        #ifdef DEBUG
+        else {
+            // get from current directory
+            char curdir[PATH_MAX];
+            path = getwd(curdir) + ("/" + path);
+        }
+        #endif
+    }
 
     // prepare argv vector
     std::unique_ptr<char*[]> argv;
@@ -108,6 +122,38 @@ int process_msg_launch(const vobj_t msg, vobj_t rsp) {
     return 0;
 }
 
+/// \brief register executable tool for provided short name
+int process_msg_regt(const vobj_t msg, vobj_t rsp) {
+    auto name = vobj_get_str(msg, VLAUNCH_KEY_NAME);
+    if (NULL == name) {
+        ERR("Failed to process REGT command, no name specified");
+        vobj_set_llong(rsp, "status", -1);
+        vobj_set_llong(rsp, "errno", EINVAL);
+        return 0;
+    }
+
+    auto path = vobj_get_str(msg, VLAUNCH_KEY_PATH);
+    if (NULL == path) {
+        LOG("Tool %s unregisterred", name);
+        toolNames.erase(name);
+        vobj_set_llong(rsp, "status", 0);
+        return 0;
+    }
+
+    if (toolNames.end() != toolNames.find(name)) {
+        ERR("Tool %s is already registerred", name);
+        vobj_set_llong(rsp, "status", -1);
+        vobj_set_llong(rsp, "errno", EEXIST);
+        return 0;
+    }
+
+    toolNames[name] = path;
+    vobj_set_llong(rsp, "status", 0);
+    LOG("Tool %s -> %s registerred", name, path);
+
+    return 0;
+}
+
 int process_msg(const vobj_t msg, vobj_t rsp) {
     switch(vobj_get_llong(msg, VLAUNCH_KEY_CMD)) {
         default:
@@ -116,12 +162,13 @@ int process_msg(const vobj_t msg, vobj_t rsp) {
             return process_msg_nope(msg, rsp);
 
         case VLAUNCH_CMD_LAUNCH:
-            // also incomplete msgs will be handled here :/
             return process_msg_launch(msg, rsp);
 
         case VLAUNCH_CMD_STOP:
-            // also incomplete msgs will be handled here :/
-            return process_msg_nope(msg, rsp);
+            return process_msg_regt(msg, rsp);
+
+        case VLAUNCH_CMD_REGT:
+            return process_msg_regt(msg, rsp);
     }
 }
 
